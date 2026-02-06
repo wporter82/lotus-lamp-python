@@ -1,0 +1,11 @@
+# Lotus Lamp Python Library Dependencies
+
+# Bluetooth Low Energy communication
+bleak>=0.21.0
+
+# No other dependencies required!
+# The library uses only Python standard library modules:
+# - asyncio (async/await support)
+# - json (data loading)
+# - colorsys (HSV color conversion)
+# - typing (type hints)

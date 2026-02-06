@@ -1,0 +1,18 @@
+{
+  "devices": [
+    {
+      "name": "MELK-OA10   5F",
+      "address": null,
+      "service_uuid": "0000FFF0-0000-1000-8000-00805F9B34FB",
+      "write_char_uuid": "0000FFF3-0000-1000-8000-00805F9B34FB",
+      "notify_char_uuid": "0000FFF4-0000-1000-8000-00805F9B34FB"
+    },
+    {
+      "name": "My Living Room Lamp",
+      "address": "XX:XX:XX:XX:XX:XX",
+      "service_uuid": "0000FFF0-0000-1000-8000-00805F9B34FB",
+      "write_char_uuid": "0000FFF3-0000-1000-8000-00805F9B34FB",
+      "notify_char_uuid": "0000FFF4-0000-1000-8000-00805F9B34FB"
+    }
+  ]
+}

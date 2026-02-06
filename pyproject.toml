@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lotus-lamp"
+version = "1.0.0"
+description = "Python library for controlling Lotus Lamp RGB LED strips via Bluetooth"
+readme = "README.md"
+authors = [{name = "Lotus Lamp Python Contributors"}]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Topic :: Home Automation",
+    "Topic :: System :: Hardware",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+keywords = ["bluetooth", "ble", "led", "rgb", "lamp", "lotus", "smart-home"]
+requires-python = ">=3.7"
+dependencies = [
+    "bleak>=0.21.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+]
+
+[project.urls]
+Homepage = "https://github.com/wporter82/lotus-lamp-python"
+Documentation = "https://github.com/wporter82/lotus-lamp-python/blob/main/docs/PROTOCOL.md"
+Repository = "https://github.com/wporter82/lotus-lamp-python"
+"Bug Tracker" = "https://github.com/wporter82/lotus-lamp-python/issues"
+
+[tool.setuptools]
+packages = ["lotus_lamp"]
+
+[tool.setuptools.package-data]
+lotus_lamp = ["data/*.json"]

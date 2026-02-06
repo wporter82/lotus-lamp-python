@@ -1,0 +1,25 @@
+# Include documentation
+include README.md
+include LICENSE
+include requirements.txt
+include CONFIGURATION.md
+include TESTING.md
+include DOCUMENTATION.md
+
+# Include package data
+recursive-include lotus_lamp/data *.json
+
+# Include examples
+recursive-include examples *.py
+
+# Include documentation
+recursive-include docs *.md
+
+# Exclude development files
+exclude .gitignore
+exclude pytest.ini
+exclude requirements-dev.txt
+recursive-exclude archive *
+recursive-exclude tests *
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]

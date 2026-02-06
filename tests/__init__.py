@@ -1,0 +1,3 @@
+"""
+Lotus Lamp Test Suite
+"""
