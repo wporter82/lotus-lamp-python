@@ -12,8 +12,8 @@ if readme_file.exists():
     long_description = readme_file.read_text(encoding='utf-8')
 
 setup(
-    name="lotus-lamp",
-    version="1.0.0",
+    name="lotus_lamp",
+    version="1.0.1",
     author="Lotus Lamp Python Contributors",
     author_email="",  # Add if desired
     description="Python library for controlling Lotus Lamp RGB LED strips via Bluetooth",

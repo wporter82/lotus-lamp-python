@@ -231,15 +231,15 @@ See the `examples/` directory for:
 
 ## Documentation 📖
 
-**→ [Complete Documentation Guide](DOCUMENTATION.md)** - Index of all documentation
+**→ [Complete Documentation Guide](https://github.com/wporter82/lotus-lamp-python/blob/main/DOCUMENTATION.md)** - Index of all documentation
 
 ### User Documentation
-- [Configuration Guide](CONFIGURATION.md) - Advanced configuration options
-- [Mode Reference](docs/MODES.md) - All 213 modes with categories
-- [Protocol Documentation](docs/PROTOCOL.md) - Complete BLE protocol specification
+- [Configuration Guide](https://github.com/wporter82/lotus-lamp-python/blob/main/CONFIGURATION.md) - Advanced configuration options
+- [Mode Reference](https://github.com/wporter82/lotus-lamp-python/blob/main/docs/MODES.md) - All 213 modes with categories
+- [Protocol Documentation](https://github.com/wporter82/lotus-lamp-python/blob/main/docs/PROTOCOL.md) - Complete BLE protocol specification
 
 ### Developer Documentation
-- [Testing Guide](TESTING.md) - Running and writing tests
+- [Testing Guide](https://github.com/wporter82/lotus-lamp-python/blob/main/TESTING.md) - Running and writing tests
 
 ## Development 🛠️
 
@@ -281,7 +281,7 @@ Contributions welcome! Please feel free to submit a Pull Request.
 
 ## License 📄
 
-MIT License - see [LICENSE](LICENSE) file for details
+MIT License - see [LICENSE](https://github.com/wporter82/lotus-lamp-python/blob/main/LICENSE) file for details
 
 ## Credits 🙏
 

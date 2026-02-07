@@ -41,7 +41,7 @@ Author: Community reverse engineering project
 License: MIT
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __author__ = "Lotus Lamp Python Contributors"
 __license__ = "MIT"
 
