@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Complete BLE protocol documentation
 - All 213 modes documented with categories
 - Configuration guide for advanced usage
-- Testing guide for contributors
+- Testing guide
 - Interactive mode browser example
 
 [1.0.1]: https://github.com/wporter82/lotus-lamp-python/compare/v1.0.0...v1.0.1

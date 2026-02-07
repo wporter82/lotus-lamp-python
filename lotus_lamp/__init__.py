@@ -37,12 +37,12 @@ Features:
     - Category-based mode organization
     - Multi-device support
 
-Author: Community reverse engineering project
+Author: Wayne Porter
 License: MIT
 """
 
 __version__ = "1.0.1"
-__author__ = "Lotus Lamp Python Contributors"
+__author__ = "Wayne Porter"
 __license__ = "MIT"
 
 # Import main classes for easy access

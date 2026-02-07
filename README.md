@@ -287,13 +287,12 @@ MIT License - see [LICENSE](https://github.com/wporter82/lotus-lamp-python/blob/
 
 - Reverse engineered from the **Lotus Lamp X** Android app (com.szelk.ledlamppro)
 - Protocol documentation through APK decompilation and systematic testing
-- Community effort to document and share lamp control capabilities
 
 ## Disclaimer ⚠️
 
 This is an unofficial library created through reverse engineering. Not affiliated with or endorsed by the lamp manufacturer or app developer.
 
-Use at your own risk. The library sends standard BLE commands but we cannot guarantee compatibility with all hardware variants.
+Use at your own risk. The library sends standard BLE commands but I cannot guarantee compatibility with all hardware variants.
 
 ## Troubleshooting 🔧
 
@@ -319,6 +318,6 @@ Use at your own risk. The library sends standard BLE commands but we cannot guar
 
 ---
 
-Made with ❤️ by the community
+Made with ❤️ by Wayne Porter
 
 **Star ⭐ this repo if you find it useful!**

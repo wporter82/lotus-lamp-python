@@ -7,7 +7,7 @@ name = "lotus_lamp"
 version = "1.0.1"
 description = "Python library for controlling Lotus Lamp RGB LED strips via Bluetooth"
 readme = "README.md"
-authors = [{name = "Lotus Lamp Python Contributors"}]
+authors = [{name = "Wayne Porter"}]
 license = {text = "MIT"}
 classifiers = [
     "Development Status :: 5 - Production/Stable",
