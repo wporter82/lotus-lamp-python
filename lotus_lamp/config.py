@@ -114,7 +114,7 @@ class ConfigManager:
             self.config_path = config_path
 
             if self.verbose:
-                print(f"✓ Loaded {len(self.devices)} device(s) from: {config_path}")
+                print(f"[OK] Loaded {len(self.devices)} device(s) from: {config_path}")
 
             return True
 

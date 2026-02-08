@@ -12,6 +12,7 @@ Main controller class for communicating with Lotus Lamp RGB LED strips.
 
 import asyncio
 import os
+from datetime import datetime
 from bleak import BleakClient, BleakScanner
 from typing import Optional, Tuple, Union
 import colorsys
@@ -74,8 +75,7 @@ class LotusLamp:
         self._connected = False
 
         # Check environment variable for debug mode
-        if os.getenv('LOTUS_LAMP_VERBOSE', '').lower() in ('1', 'true', 'yes'):
-            verbose = True
+        verbose = verbose or os.getenv('LOTUS_LAMP_VERBOSE', '').lower() in ('1', 'true', 'yes')
 
         self.verbose = verbose
 
@@ -221,6 +221,11 @@ class LotusLamp:
         if not self._connected:
             raise ConnectionError("Not connected to lamp")
 
+        # Debug: print the command being sent
+        if self.verbose:
+            hex_str = ' '.join(f'{b:02X}' for b in command)
+            print(f"Sending command: {hex_str}")
+
         await self.client.write_gatt_char(self.WRITE_CHAR_UUID, command, response=False)
         await asyncio.sleep(delay)
 
@@ -348,6 +353,127 @@ class LotusLamp:
         """
         command = bytes([0x7E, 0x07, 0x04, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0xEF])
         await self._send_command(command, delay=0.5)
+
+    # ==================== TIMER/SCHEDULING ====================
+
+    async def sync_time(self):
+        """
+        Sync current time to lamp (required before setting timers)
+
+        The lamp has no real-time clock - it relies on the app to provide
+        the current time. Always call this before set_timer_on/set_timer_off.
+
+        Command uses E1Achieve format (standard 9-byte protocol):
+        7E 06 83 HH MM SS WW 00 EF
+        Command type: 0x83 (DATA_TIME)
+        Protocol length: 0x06 (DATA_TIME-specific)
+        Parameters: {hour, minute, second, weekday}
+
+        Note: weekday uses Android Calendar convention minus 1:
+        syncData() uses calendar.get(7) - 1, which gives Sunday=0, Monday=1, ..., Saturday=6
+        Python's weekday() gives Monday=0, ..., Saturday=5, Sunday=6
+        So we convert: (weekday() + 1) % 7 to match Java's convention
+        """
+        now = datetime.now()
+        weekday = now.weekday() + 1 # Mon=1...Sun=7
+        command = bytes([0x7E, 0x06, 0x83, now.hour, now.minute, now.second, weekday, 0x00, 0xEF])
+        await self._send_command(command, delay=1.0)
+
+    async def set_timer_on(self, hour: int, minute: int, days: list = None):
+        """
+        Set ON timer - lamp will turn on at specified time
+
+        Args:
+            hour: Hour (0-23)
+            minute: Minute (0-59)
+            days: Optional list of days e.g. ['monday', 'friday']
+                  None/empty = one-shot timer (fires once)
+
+        Note: Call sync_time() first so the lamp knows the current time.
+
+        Command format (bitmask at position 7, overwrites fixed 0x00):
+        7E 07 82 HH MM 00 00 BB EF
+        Command type: 0x82 (TIMER_SWITCH)
+        Protocol length: 0x07
+        Params: {hour, minute, 0x00=padding, 0x00=ON type, BB=bitmask}
+        The 5th param (bitmask) overwrites position 7 in E1Achieve
+        """
+        hour = max(0, min(23, hour))
+        minute = max(0, min(59, minute))
+        bitmask = self._build_week_bitmask(days)
+        command = bytes([0x7E, 0x07, 0x82, hour, minute, 0x00, 0x00, bitmask, 0xEF])
+        await self._send_command(command, delay=1.0)
+
+    async def set_timer_off(self, hour: int, minute: int, days: list = None):
+        """
+        Set OFF timer - lamp will turn off at specified time
+
+        Args:
+            hour: Hour (0-23)
+            minute: Minute (0-59)
+            days: Optional list of days e.g. ['monday', 'friday']
+                  None/empty = one-shot timer (fires once)
+
+        Note: Call sync_time() first so the lamp knows the current time.
+
+        Command format (bitmask at position 7, overwrites fixed 0x00):
+        7E 07 82 HH MM 00 01 BB EF
+        Command type: 0x82 (TIMER_SWITCH)
+        Protocol length: 0x07
+        Params: {hour, minute, 0x00=padding, 0x01=OFF type, BB=bitmask}
+        The 5th param (bitmask) overwrites position 7 in E1Achieve
+        """
+        hour = max(0, min(23, hour))
+        minute = max(0, min(59, minute))
+        bitmask = self._build_week_bitmask(days)
+        command = bytes([0x7E, 0x07, 0x82, hour, minute, 0x00, 0x01, bitmask, 0xEF])
+        await self._send_command(command, delay=1.0)
+
+    async def disable_timer_on(self):
+        """
+        Disable the ON timer
+
+        Command uses E1Achieve format:
+        7E 07 82 00 00 00 00 00 EF
+        Sends ON timer (type=0x00) with hour/minute=0 and no enabled flag
+        """
+        command = bytes([0x7E, 0x07, 0x82, 0x00, 0x00, 0x00, 0x00, 0x00, 0xEF])
+        await self._send_command(command)
+
+    async def disable_timer_off(self):
+        """
+        Disable the OFF timer
+
+        Command uses E1Achieve format:
+        7E 07 82 00 00 00 01 00 EF
+        Sends OFF timer (type=0x01) with hour/minute=0 and no enabled flag
+        """
+        command = bytes([0x7E, 0x07, 0x82, 0x00, 0x00, 0x00, 0x01, 0x00, 0xEF])
+        await self._send_command(command)
+
+    @staticmethod
+    def _build_week_bitmask(days: list = None) -> int:
+        """
+        Build week repeat bitmask byte
+
+        Args:
+            days: List of day name strings. Empty/None = one-shot timer.
+
+        Returns:
+            Bitmask byte with bit 7 (0x80) set as enabled flag,
+            plus bits for each selected day matching Java Calendar convention:
+            Sunday=bit0, Monday=bit1, ..., Saturday=bit6
+        """
+        # Bitmask must match the weekday convention used in sync_time:
+        # Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5, Sun=6
+        DAY_MAP = {
+            'monday': 0x01, 'tuesday': 0x02, 'wednesday': 0x04,
+            'thursday': 0x08, 'friday': 0x10, 'saturday': 0x20, 'sunday': 0x40
+        }
+        bitmask = 0x80  # enabled flag always set
+        for day in (days or []):
+            bitmask |= DAY_MAP.get(day.lower(), 0)
+        return bitmask
 
     # ==================== CONVENIENCE METHODS ====================
 

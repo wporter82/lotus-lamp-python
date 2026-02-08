@@ -372,6 +372,119 @@ These command types cause the lamp to become unresponsive and require power cycl
 
 ---
 
+---
+
+### 5. Timer/Scheduling
+
+**IMPLEMENTED - Protocol decoded from APK decompilation + behavioral testing.**
+
+The lamp handles scheduling internally (lamp-side). The app sends the current time to
+the lamp first, then sends timer configuration. No phone needed after setup.
+
+#### Protocol Format
+
+Timer commands use the **standard E1Achieve format** (same 9-byte structure as all
+other commands). They do NOT use a special timer format.
+
+```
+┌─────────┬──────────┬──────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┐
+│  Header │ Protocol │ Command  │ Param 1 │ Param 2 │ Param 3 │ Param 4 │ Fixed   │ Footer  │
+│   0x7E  │   Len    │   Type   │         │         │         │         │  0x00   │  0xEF   │
+└─────────┴──────────┴──────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┘
+  Byte 0     Byte 1     Byte 2    Byte 3    Byte 4    Byte 5    Byte 6    Byte 7    Byte 8
+```
+
+**Important:** E1Achieve fills 5 parameter slots (positions 3-7).
+The 5th param overwrites the normally-fixed 0x00 at position 7.
+
+#### Step 1: Sync Current Time
+
+```
+Command Format: 7E 06 83 HH MM SS WW 00 EF
+
+Where:
+  06 = Protocol length (DATA_TIME-specific value)
+  83 = DATA_TIME command type
+  HH = Current hour (00-17 hex / 0-23 decimal)
+  MM = Current minute (00-3B hex / 0-59 decimal)
+  SS = Current second (00-3B hex / 0-59 decimal)
+  WW = Day of week (1-7, where 1=Monday...7=Sunday)
+  00 = Fixed byte 7
+  EF = Footer
+```
+
+**Note:** Weekday values 1-7 correspond directly to bitmask bits 0-6:
+- Python's `weekday() + 1` gives Mon=1, Tue=2, ..., Sun=7
+- This directly maps to timer bitmask bits: Mon=0x01, Tue=0x02, ..., Sun=0x40
+
+#### Step 2: Set Timer
+
+```
+Command Format: 7E 07 82 HH MM 00 TT BB EF
+
+Where:
+  07 = Protocol length
+  82 = TIMER_SWITCH command type
+  HH = Timer hour (00-17 hex / 0-23 decimal)
+  MM = Timer minute (00-3B hex / 0-59 decimal)
+  00 = Padding byte (always 0x00)
+  TT = Timer type (00 = ON, 01 = OFF)
+  BB = Week bitmask (bit 7=enabled, bits 0-6=day flags)
+  EF = Footer
+```
+
+**Week Bitmask:**
+
+The bitmask bits correspond to sync_time weekday values:
+
+| Bit | Value | Day | sync_time WW value |
+|-----|-------|-----|-------------------|
+| 0 | 0x01 | Monday | 0x01 |
+| 1 | 0x02 | Tuesday | 0x02 |
+| 2 | 0x04 | Wednesday | 0x03 |
+| 3 | 0x08 | Thursday | 0x04 |
+| 4 | 0x10 | Friday | 0x05 |
+| 5 | 0x20 | Saturday | 0x06 |
+| 6 | 0x40 | Sunday | 0x07 |
+| 7 | 0x80 | Timer enabled | - |
+
+**Examples:**
+```
+Sync time (Mon 07:30:00):  7E 06 83 07 1E 00 01 00 EF  (WW=0x01 for Monday)
+Sync time (Sat 07:30:00):  7E 06 83 07 1E 00 06 00 EF  (WW=0x06 for Saturday)
+Sync time (Sun 07:30:00):  7E 06 83 07 1E 00 07 00 EF  (WW=0x07 for Sunday)
+ON timer at 07:30:         7E 07 82 07 1E 00 00 80 EF  (0x80 = enabled, no days)
+OFF timer at 23:00:        7E 07 82 17 00 00 01 80 EF
+ON timer Mon-Fri 07:30:    7E 07 82 07 1E 00 00 9F EF  (0x80|0x1F = Mon-Fri bits 0-4)
+ON timer Sat only:         7E 07 82 07 1E 00 00 A0 EF  (0x80|0x20 = Saturday bit 5)
+ON timer Sun only:         7E 07 82 07 1E 00 00 C0 EF  (0x80|0x40 = Sunday bit 6)
+Disable ON timer:          7E 07 82 00 00 00 00 00 EF  (bitmask=0x00 = disabled)
+Disable OFF timer:         7E 07 82 00 00 00 01 00 EF
+```
+
+**Python Usage:**
+```python
+# Sync time, then set schedule
+await lamp.sync_time()
+await lamp.set_timer_on(7, 30)
+await lamp.set_timer_off(23, 0)
+
+# Disable timers
+await lamp.disable_timer_on()
+await lamp.disable_timer_off()
+```
+
+**Notes:**
+- Always call `sync_time()` before setting timers (lamp has no real-time clock)
+- The weekday in `sync_time()` must match the bitmask bit values (WW=1 → bit 0, WW=2 → bit 1, etc.)
+- Timer survives brief power loss but NOT extended disconnection (30+ seconds)
+- ON and OFF timers are independent
+- One-shot timers (bitmask=0x80 with no day bits) fire once then must be re-set
+- Repeating timers (bitmask with day bits set) fire on specified days of week
+- Tested and verified: Mon-Sun all work correctly with proper weekday/bitmask mapping
+
+---
+
 ## Future Exploration
 
 ### Unknown Parameters
@@ -383,7 +496,6 @@ These command types cause the lamp to become unresponsive and require power cycl
 - Individual LED control (if supported)
 - Custom animation creation
 - Music synchronization parameters
-- Timer/scheduling functions
 
 ---
 
