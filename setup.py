@@ -13,7 +13,7 @@ if readme_file.exists():
 
 setup(
     name="lotus_lamp",
-    version="1.0.1",
+    version="1.1.0",
     author="Wayne Porter",
     author_email="wporter82@gmail.com",
     description="Python library for controlling Lotus Lamp RGB LED strips via Bluetooth",
